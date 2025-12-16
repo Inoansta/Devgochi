@@ -1,17 +1,13 @@
-// src/components/Character.jsx
-
 import React from "react";
-// 📢 [수정 1]: src/images 폴더에서 이미지를 import합니다.
 import CodeImage from "../images/code.png";
 import BugImage from "../images/bug.png";
 
-const Character = ({ data }) => {
-  // 📢 [수정 2]: import한 변수를 사용합니다.
+const SortItem = ({ data }) => {
   const imageSrc = data.type === "정상코드" ? CodeImage : BugImage;
 
   return (
     <img
-      src={imageSrc} // 📢 변수 사용
+      src={imageSrc}
       alt={data.type}
       style={{
         position: "absolute",
@@ -26,4 +22,4 @@ const Character = ({ data }) => {
   );
 };
 
-export default Character;
+export default SortItem;
