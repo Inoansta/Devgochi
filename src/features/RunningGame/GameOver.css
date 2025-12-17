@@ -1,0 +1,109 @@
+/* 전체 배경: 붉은색 톤의 어두운 배경 */
+.game-over-container {
+  width: 100%;
+  height: 100vh;
+  background-color: #1a0505; /* 아주 어두운 빨강 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Courier New', Courier, monospace;
+  position: relative;
+  z-index: 100;
+}
+
+/* 에러 박스 */
+.error-box {
+  background-color: rgba(20, 0, 0, 0.9);
+  border: 2px solid #ff3333;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(255, 51, 51, 0.4);
+  max-width: 500px;
+  width: 90%;
+  animation: shake 0.5s ease-out; /* 등장할 때 쾅! 하는 느낌 */
+}
+
+@keyframes shake {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* 텍스트 스타일 */
+.error-title {
+  color: #ff3333;
+  font-size: 3rem;
+  margin: 0;
+  text-shadow: 2px 2px 0px #550000;
+  letter-spacing: -2px;
+}
+
+.error-code {
+  color: #aa5555;
+  margin-bottom: 30px;
+  font-size: 0.9rem;
+}
+
+/* 점수판 영역 */
+.score-report {
+  border-top: 1px dashed #ff3333;
+  border-bottom: 1px dashed #ff3333;
+  padding: 20px 0;
+  margin-bottom: 20px;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  color: #fff;
+  font-size: 1.2rem;
+  margin: 10px 0;
+}
+
+.score-value {
+  font-weight: bold;
+  color: #ffaaaa;
+}
+
+/* 신기록일 때 스타일 */
+.best-row.new-record .score-value {
+  color: #ffff00; /* 노란색 강조 */
+  text-shadow: 0 0 10px #ffff00;
+}
+
+.new-badge {
+  font-size: 0.8rem;
+  background-color: #ff3333;
+  color: #000;
+  padding: 2px 5px;
+  margin-left: 10px;
+  border-radius: 3px;
+  animation: blink 0.5s infinite alternate;
+}
+
+/* 메시지 */
+.message {
+  color: #ff7777;
+  margin-bottom: 30px;
+  font-size: 0.9rem;
+}
+
+/* 재부팅 버튼 */
+.reboot-button {
+  background-color: #ff3333;
+  color: #000;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(255, 51, 51, 0.6);
+  transition: all 0.2s;
+}
+
+.reboot-button:hover {
+  background-color: #ff0000;
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(255, 0, 0, 0.8);
+}

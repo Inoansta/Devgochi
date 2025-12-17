@@ -1,0 +1,110 @@
+/* 게임 전체 컨테이너 */
+.game-play-container {
+  width: 100%;
+  height: 100vh; /* 전체 화면 */
+  background-color: #0d1117; /* GitHub Dark 느낌 */
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border-top: 4px solid #00ffea;
+  border-bottom: 4px solid #00ffea;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* 점수판 */
+.game-score-board {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #00ffea;
+  text-shadow: 0 0 5px #00ffea;
+  z-index: 10;
+}
+
+/* 게임 트랙 (캐릭터와 장애물이 있는 공간) */
+.game-track {
+  width: 100%;
+  height: 200px;
+  position: absolute;
+  bottom: 0;
+  border-top: 1px dashed #333;
+  background: linear-gradient(to bottom, transparent, #161b22);
+}
+
+/* 🏃 플레이어 캐릭터 */
+.player-character {
+  width: 50px;
+  height: 50px;
+  font-size: 40px; /* 이모지 크기 */
+  position: absolute;
+  top: 150px; /* 바닥 위치 (200px 트랙 높이 - 캐릭터 50px) */
+  left: 10px; /* 왼쪽 고정 */
+  z-index: 5;
+  
+  /* 부드러운 움직임 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 점프 애니메이션 (클래스가 붙으면 실행) */
+.animate-jump {
+  animation: jump-animation 0.5s ease-out;
+}
+
+@keyframes jump-animation {
+  0% { top: 150px; }
+  30% { top: 50px; }  /* 점프 정점 */
+  70% { top: 50px; }  /* 공중 체류 */
+  100% { top: 150px; } /* 착지 */
+}
+
+/* 🐛 장애물 (움직이는 애니메이션) */
+.obstacle-bug {
+  width: 40px;
+  height: 40px;
+  font-size: 30px;
+  position: absolute;
+  top: 160px; /* 바닥에 붙음 */
+  left: 100%; /* 화면 오른쪽 끝에서 시작 */
+  
+  /* 무한 반복 애니메이션 */
+  animation: slide-obstacle 2s infinite linear; 
+}
+
+/* 장애물 이동 애니메이션 (오른쪽 -> 왼쪽) */
+@keyframes slide-obstacle {
+  0% { left: 100%; }
+  100% { left: -50px; } /* 화면 왼쪽 밖으로 나감 */
+}
+
+/* 모바일 안내 문구 */
+.mobile-jump-guide {
+  position: absolute;
+  bottom: 50px;
+  width: 100%;
+  text-align: center;
+  color: #555;
+  font-size: 0.8rem;
+  animation: blink 2s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 배경 스캔라인 (GameIntro와 통일감) */
+.game-scanlines {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 255, 234, 0.05) 3px
+  );
+  pointer-events: none;
+}
