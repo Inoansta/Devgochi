@@ -1,21 +1,27 @@
 import React from "react";
 
-const GameOver = ({ status, score, onStart }) => {
-  if (status === "READY") {
-    return <button onClick={onStart}>게임 시작</button>;
-  }
+const GameOver = ({ score, onStart }) => {
+  const handleGoHome = () => {
+    window.location.href = "/";
+  };
 
-  if (status === "GAMEOVER") {
-    return (
-      <div className="GameOverMessage">
-        <h2>게임 오버!</h2>
-        <p>최종 점수 : {score}</p>
-        <button onClick={onStart}>한번 더?</button>
+  return (
+    <div className="GameOverMessage">
+      <h2>⚠️ GAME OVER</h2>
+      <p>
+        최종 점수 : <strong>{score}</strong>
+      </p>
+
+      <div className="button-group">
+        <button className="start-button" onClick={onStart}>
+          재시작
+        </button>
+        <button className="home-button" onClick={handleGoHome}>
+          나가기
+        </button>
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 };
 
 export default GameOver;
