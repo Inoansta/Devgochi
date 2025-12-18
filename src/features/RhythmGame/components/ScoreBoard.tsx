@@ -15,7 +15,7 @@ export default function ScoreBoard({ score, combo, bestCombo }: Props) {
       }}
     >
       <Badge label="Score" value={score} />
-      <Badge label="Combo" value={combo} />
+      <Badge label="Combo" value={combo} />0
       <Badge label="Best" value={bestCombo} />
     </div>
   );
