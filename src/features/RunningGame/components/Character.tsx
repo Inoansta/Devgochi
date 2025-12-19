@@ -19,10 +19,6 @@ const ASPECT_RATIO = ORIGIN_W / ORIGIN_H;
 const FRAME_RATIO = ASPECT_RATIO / FRAMES;
 // ------------------------------ 끝 ------------------------------
 
-
-
-
-
 // ------------------------------ 애니메이션 정의 ------------------------------
 // 1. 달리기 애니메이션 정의
 // 무한 스크롤 원리, 스프라이트 구현 ( 캐릭터가 달리는 것처럼 보이도록 )
@@ -56,15 +52,14 @@ const blinkAnimation = keyframes`
   0% { opacity: 1; }
   50% { opacity: 0.4; } /* 반투명 */
   100% { opacity: 1; }
-`
+`;
 // ------------------------------ 끝 ------------------------------
 
-
-
-
-
 // 캐릭터 스타일 정의
-const CharacterDiv = styled.div<{ $isJumping: boolean, $isInvincible: boolean }>`
+const CharacterDiv = styled.div<{
+  $isJumping: boolean;
+  $isInvincible: boolean;
+}>`
   width: ${CHAR_HEIGHT_VH * FRAME_RATIO}vh; /* 프레임 한 칸의 가로 크기 */
   height: ${CHAR_HEIGHT_VH}vh;
   position: absolute;
@@ -73,7 +68,7 @@ const CharacterDiv = styled.div<{ $isJumping: boolean, $isInvincible: boolean }>
   z-index: 15;
 
   /* 이미지 테두리에 노란색 네온 효과 적용 */
-  filter: drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 16px #FFD700);
+  filter: drop-shadow(0 0 8px #ffd700) drop-shadow(0 0 16px #ffd700);
 
   /* 스프라이트 구현
   달리는 모습을 7단계로 쪼개서 하나의 긴 이미지로 만들어서 사용한다. */
@@ -94,11 +89,15 @@ const CharacterDiv = styled.div<{ $isJumping: boolean, $isInvincible: boolean }>
     `}
 
   /* 무적 상태일 때 처리 */
-  ${(props) => props.$isInvincible && css`
-    animation: ${runAnimation} 0.4s steps(7) infinite, ${blinkAnimation} 0.2s infinite;
-    /* 흑백 처리까지 하면 더 '유령' 같음 */
-    filter: grayscale(100%); 
-  `}
+  ${(props) =>
+    props.$isInvincible &&
+    css`
+      animation:
+        ${runAnimation} 0.4s steps(7) infinite,
+        ${blinkAnimation} 0.2s infinite;
+      /* 흑백 처리까지 하면 더 '유령' 같음 */
+      filter: grayscale(100%);
+    `}
 `;
 // ------------------------------ 끝 ------------------------------
 
@@ -110,7 +109,13 @@ interface CharacterProps {
 // forwardRef<참조할태그, Props타입>
 const Character = forwardRef<HTMLDivElement, CharacterProps>(
   ({ isJumping, isInvincible }, ref) => {
-    return <CharacterDiv ref={ref} $isJumping={isJumping} $isInvincible={isInvincible}></CharacterDiv>;
+    return (
+      <CharacterDiv
+        ref={ref}
+        $isJumping={isJumping}
+        $isInvincible={isInvincible}
+      ></CharacterDiv>
+    );
   }
 );
 

@@ -1,5 +1,5 @@
-import React, { forwardRef } from 'react';
-import styled, { keyframes } from 'styled-components';
+import React, { forwardRef } from "react";
+import styled, { keyframes } from "styled-components";
 import obstacleImg from "../assets/Obstacle.png";
 import obstacleImg2 from "../assets/Obstacle2.png";
 
@@ -10,32 +10,30 @@ import obstacleImg2 from "../assets/Obstacle2.png";
 // 이미지 정보
 const ORIGIN_W = 125; // 원본 이미지 전체 너비 (px)
 const ORIGIN_H = 80; // 원본 이미지 높이 (px)
-const CHAR_HEIGHT_VH = 8; // 화면에서 보여질 높이 (화면 높이의 12%)
+const CHAR_HEIGHT_VH = 8; // 화면에서 보여질 높이 (화면 높이의 8%)
 
 // 비율 계산
 // 전체 이미지 비율 (가로/세로)
 const ASPECT_RATIO = ORIGIN_W / ORIGIN_H;
 // ------------------------------ 끝 ------------------------------
 
-
-
-// 1. 장애물이 오른쪽 -> 왼쪽으로 이동하는 애니메이션
+// 장애물이 오른쪽 -> 왼쪽으로 이동하는 애니메이션
 const slideLeft = keyframes`
   0% { 
-    left: 90%; /* 화면 오른쪽 끝에서 시작 */
+    left: 100%; /* 화면 오른쪽 끝에서 시작 */
   }
   100% { 
     left: -100px; /* 화면 왼쪽 끝으로 완전히 사라짐 */
   }
 `;
 
-// 2. 장애물 스타일
+// 장애물 스타일
 const ObstacleDiv = styled.div`
-  width: ${CHAR_HEIGHT_VH * ASPECT_RATIO}vh; 
+  width: ${CHAR_HEIGHT_VH * ASPECT_RATIO}vh;
   height: ${CHAR_HEIGHT_VH}vh;
   position: absolute;
   z-index: 15; /* 바닥(FloorLayer z-index:10)보다 위로 오게 설정 */
-  
+
   top: ${80 - CHAR_HEIGHT_VH}vh; /* 캐릭터의 위치 */
   left: 100%; /* 초기 위치 */
 
@@ -44,20 +42,18 @@ const ObstacleDiv = styled.div`
   background-repeat: no-repeat;
 
   /* 2s: 2초에 한 번씩 지나감 (속도)
-    linear: 일정한 속도로 (가속도 없이)
+    linear: 일정한 속도로 
     infinite: 무한 반복
   */
-  animation: ${slideLeft} 2.3s linear infinite;
+  animation: ${slideLeft} 2s linear infinite;
 `;
 
-// 3. 컴포넌트 정의
-// Props가 딱히 필요 없다면 빈 인터페이스나 생략 가능하지만, 
+// 컴포넌트 정의
+// Props가 딱히 필요 없다면 빈 인터페이스나 생략 가능하지만, 두 번째 인자가 ref이기 때문에 _를 사용한다.
 // forwardRef 타입 정의를 위해 HTMLDivElement를 명시합니다.
-const Obstacle = forwardRef<HTMLDivElement>((props, ref) => {
-  return (
-    <ObstacleDiv ref={ref}></ObstacleDiv>
-  );
+const Obstacle = forwardRef<HTMLDivElement>((_, ref) => {
+  return <ObstacleDiv ref={ref}></ObstacleDiv>;
 });
 
-// 4. 최적화: 부모(GamePlay)가 리렌더링되어도 나는 다시 안 그려짐!
+// 부모(GamePlay)가 리렌더링되어도 Obstacle은 다시 그려지지 않도록
 export default React.memo(Obstacle);

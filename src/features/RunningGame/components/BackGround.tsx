@@ -1,6 +1,6 @@
 import styled, { keyframes } from "styled-components";
 import bg from "../assets/background.png";
-import bottomBg from "../assets/background-bottom.png"; 
+import bottomBg from "../assets/background-bottom.png";
 import React from "react";
 
 // 1. 애니메이션 (2500px 이동)
