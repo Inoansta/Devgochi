@@ -13,74 +13,6 @@ body {
   overflow-x: hidden;
 }
 
-/* 게임 시작 전 대기 화면*/
-.ready-screen {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 450px;
-  padding: 40px;
-  background-color: rgba(22, 27, 34, 0.98);
-  border-radius: 20px;
-  text-align: center;
-  z-index: 100;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
-}
-
-/* 제목 */
-.ready-screen h1 {
-  font-size: 28px;
-  color: #c9d1d9;
-  margin-top: 0;
-  margin-bottom: 25px;
-  text-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
-}
-
-/* 조작 방법 설명 박스 */
-.Instructions {
-  background-color: #161b22;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  border: 1px solid #30363d;
-  text-align: left;
-}
-
-.Instructions p {
-  margin: 10px 0;
-  font-size: 18px;
-  color: #c9d1d9;
-}
-
-.Instructions strong {
-  color: #58a6ff;
-  font-size: 20px;
-  display: block;
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-/* 시작 버튼 커스텀 */
-.ready-screen .start-button {
-  width: 100%;
-  padding: 15px;
-  font-size: 22px;
-  font-weight: bold;
-  background-color: #238636;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition:
-    background-color 0.2s,
-    transform 0.1s;
-}
-
-.ready-screen .start-button:hover {
-  background-color: #2ea043;
-  transform: scale(1.02);
-}
-
 /* 게임 컨테이너 */
 .BugHunterContainer {
   display: flex;
@@ -103,6 +35,14 @@ body {
   background-color: #161b22;
 }
 
+/* 타이머 표시 영역 */
+.TimerDisplay {
+  font-size: 20px;
+  color: #ffc107;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
 /* 게임 플레이 영역 */
 .PlayArea {
   position: relative;
@@ -119,20 +59,15 @@ body {
   transition: border 0.1s ease-in-out;
 }
 
-/* 기본 버튼 스타일 */
-button {
-  padding: 10px 20px;
-  font-size: 18px;
-  background-color: #238636;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+/* 정/오답 시각 피드백 */
+.PlayArea.correct {
+  box-shadow: 0 0 30px 10px #22c55e;
+  border: 3px solid #16a34a;
 }
 
-button:hover {
-  background-color: #2ea043;
+.PlayArea.incorrect {
+  box-shadow: 0 0 30px 10px #ef4444;
+  border: 3px solid #dc2626;
 }
 
 /* 좌우 고정 데코레이션 */
@@ -147,110 +82,23 @@ button:hover {
 .BodyLevelDeco.left {
   left: 400px;
 }
+
 .BodyLevelDeco.right {
   right: 450px;
 }
 
-/* 정/오답 시각 피드백 */
-.PlayArea.correct {
-  box-shadow: 0 0 30px 10px #22c55e;
-  border: 3px solid #16a34a;
-}
-
-.PlayArea.incorrect {
-  box-shadow: 0 0 30px 10px #ef4444;
-  border: 3px solid #dc2626;
-}
-
-/* TimerDisplay */
-.TimerDisplay {
-  font-size: 20px;
-  color: #ffc107;
-  margin-bottom: 10px;
-  font-weight: bold;
-}
-
-/* --- 게임 오버 화면 영역 --- */
-.GameOverMessage {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 400px;
-  padding: 40px;
-  background-color: rgba(22, 27, 34, 0.98);
-  border: 4px solid #ef4444;
-  border-radius: 20px;
-  text-align: center;
-  z-index: 100;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
-}
-
-.GameOverMessage h2 {
-  font-size: 32px;
-  color: #ef4444;
-  margin-top: 0;
-  margin-bottom: 20px;
-  text-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
-}
-
-.GameOverMessage p {
-  font-size: 22px;
-  color: #c9d1d9;
-  margin-bottom: 30px;
-}
-
-.GameOverMessage p strong {
-  font-size: 42px;
-  color: #58a6ff;
-  display: block;
-  margin-top: 10px;
-}
-
-/* 버튼 그룹 정렬 */
-.button-group {
-  display: flex;
-  gap: 15px;
-  margin-top: 20px;
-  justify-content: center;
-}
-
-/* 게임오버 재시작 버튼 */
-.GameOverMessage .start-button {
-  flex: 1;
-  padding: 15px;
-  background-color: #ef4444;
+/* 기본 버튼 스타일 (게임 내 버튼이 있을 경우 대비) */
+button {
+  padding: 10px 20px;
   font-size: 18px;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  transition:
-    background-color 0.2s,
-    transform 0.1s;
-}
-
-.GameOverMessage .start-button:hover {
-  background-color: #dc2626;
-  transform: scale(1.02);
-}
-
-/* 게임오버 홈 버튼 */
-.GameOverMessage .home-button {
-  flex: 1;
-  padding: 15px;
-  font-size: 18px;
-  font-weight: bold;
-  background-color: #58a6ff;
+  background-color: #238636;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition:
-    background-color 0.2s,
-    transform 0.1s;
+  transition: background-color 0.2s;
 }
 
-.GameOverMessage .home-button:hover {
-  background-color: #1f6feb;
-  transform: scale(1.02);
+button:hover {
+  background-color: #2ea043;
 }

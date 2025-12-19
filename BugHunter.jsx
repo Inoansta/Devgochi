@@ -1,26 +1,35 @@
-import React, { useState, useEffect } from "react"; // useCallback 삭제 (즉시 실행하므로 필요성 낮아짐)
+import React, { useState, useEffect } from "react";
+// 컴포넌트 임포트
 import SortItem from "./components/SortItem.jsx";
 import ScoreBoard from "./components/ScoreBoard.jsx";
 import GameOver from "./components/GameOver.jsx";
 import GameStart from "./components/GameStart.jsx";
-// import GameLoading from "./components/GameLoading.jsx"; // 로딩 컴포넌트 제거
+import GameLoading from "./components/GameLoading.jsx";
 import Decoration from "./components/Decoration.jsx";
+// 설정 및 자원 임포트
 import { GAME_CONFIG, getStaticY } from "./constants.js";
 import "./CSS/BugHunter.css";
 import BackgroundImage from "./images/rail_background.png";
 
+// ID 생성을 위한 전역 변수
 let nextId = 0;
 
 const BugHunter = () => {
+  // [상태 관리]
   const [score, setScore] = useState(0);
-  const [status, setStatus] = useState("READY"); // READY, PLAYING, GameOver
+  const [status, setStatus] = useState("READY"); // READY, LOADING, PLAYING, GameOver
   const [characters, setCharacters] = useState([]);
   const [feedback, setFeedback] = useState(null);
   const [isPausedForGameOver, setIsPausedForGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
 
-  // 게임 시작 함수 (로딩 단계를 거치지 않고 바로 호출)
-  const startGame = () => {
+  // 로딩 화면으로 진입
+  const handleStartButtonClick = () => {
+    setStatus("LOADING");
+  };
+
+  // 실제 게임 데이터 초기화 및 시작 
+  const startGameAfterLoading = () => {
     setScore(0);
     setIsPausedForGameOver(false);
     setFeedback(null);
@@ -39,7 +48,7 @@ const BugHunter = () => {
 
   const endGame = () => setStatus("GameOver");
 
-  // 타이머 로직
+  //  타이머 로직: PLAYING일 때만 초당 1씩 감소
   useEffect(() => {
     if (status !== "PLAYING") return;
     const timer = setInterval(() => {
@@ -55,16 +64,36 @@ const BugHunter = () => {
     return () => clearInterval(timer);
   }, [status]);
 
-  // 입력 판정 로직
+  // 피드백 효과: 정답/오답 테두리 반짝임 처리
+  useEffect(() => {
+    if (feedback) {
+      const timer = setTimeout(() => setFeedback(null), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback]);
+
+  //  오답 처리: 틀렸을 때 2초간 멈춤 효과 후 게임오버 전환
+  useEffect(() => {
+    if (isPausedForGameOver) {
+      const timer = setTimeout(() => {
+        endGame();
+        setIsPausedForGameOver(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isPausedForGameOver]);
+
+  //  키보드 입력 판정
   useEffect(() => {
     if (status !== "PLAYING" || isPausedForGameOver) return;
+
     const handleKeyDown = (e) => {
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         const target = characters[0];
-        if (!target) return;
         const isCorrect =
           (e.key === "ArrowLeft" && target.type === "정상코드") ||
           (e.key === "ArrowRight" && target.type === "버그");
+
         if (isCorrect) {
           setScore((s) => s + 10);
           setFeedback("correct");
@@ -86,53 +115,51 @@ const BugHunter = () => {
         }
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [status, characters, isPausedForGameOver]);
 
-  // 피드백 효과 제거 로직 추가 (기존 코드 누락분 보충)
-  useEffect(() => {
-    if (feedback) {
-      const timer = setTimeout(() => setFeedback(null), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [feedback]);
-
-  // 오답 시 대기 후 종료 로직 추가 (기존 코드 누락분 보충)
-  useEffect(() => {
-    if (isPausedForGameOver) {
-      const timer = setTimeout(() => {
-        endGame();
-        setIsPausedForGameOver(false);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [isPausedForGameOver]);
-
   return (
     <div className="BugHunterContainer">
+      {/* 배경 장식 요소: 배경 레이어 */}
       <Decoration status={status} />
 
-      {/* 시작 버튼 누르면 바로 startGame 실행 */}
-      {status === "READY" && <GameStart onStart={startGame} />}
+      {/* 상황별 컴포넌트 렌더링 */}
+      
+      {/* A. 시작 화면 */}
+      {status === "READY" && <GameStart onStart={handleStartButtonClick} />}
 
-      {/* 로딩 화면 섹션 삭제됨 */}
-
-      {status === "PLAYING" && (
-        <>
-          <ScoreBoard score={score} timeLeft={timeLeft} status={status} />
-          <div
-            className={`PlayArea ${feedback || ""}`}
-            style={{ "--bg-image": `url(${BackgroundImage})` }}
-          >
-            {characters.map((char) => (
-              <SortItem key={char.id} data={char} />
-            ))}
-          </div>
-        </>
+      {/* B. 로딩 화면: 로딩 완료 시 startGameAfterLoading 실행 */}
+      {status === "LOADING" && (
+        <GameLoading onLoadComplete={startGameAfterLoading} />
       )}
 
-      {status === "GameOver" && <GameOver score={score} onStart={startGame} />}
+      {/* C. 게임 중 상단 UI (점수/타이머) */}
+      {status === "PLAYING" && (
+        <ScoreBoard score={score} timeLeft={timeLeft} status={status} />
+      )}
+
+      {/* D. 게임 플레이 영역 (메인 레일) */}
+      {status === "PLAYING" && (
+        <div
+          className={`PlayArea ${feedback || ""}`}
+          style={{ "--bg-image": `url(${BackgroundImage})` }}
+        >
+          {characters.map((char) => (
+            <SortItem
+              key={char.id}
+              data={char}
+              style={{ opacity: isPausedForGameOver ? 0.5 : 1 }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* E. 게임 오버 화면 */}
+      {status === "GameOver" && (
+        <GameOver score={score} onStart={handleStartButtonClick} />
+      )}
     </div>
   );
 };
