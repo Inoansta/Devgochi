@@ -8,56 +8,12 @@ import JudgeText from "./components/JudgeText";
 import MusicSelect from "./components/MusicSelect";
 import PauseModal from "./components/PauseModal";
 import Countdown from "./components/Countdown";
+import GameResultModal from "./components/GameResultModal";
 
 // 오디오 파일 경로 헬퍼 함수 (Vite에서 src/ 폴더 내 파일을 동적으로 로드)
 const getAudioPath = (filename: string): string => {
   return new URL(`./assets/audio/${filename}`, import.meta.url).href;
 };
-
-// 테스트용 음악 데이터 (나중에 JSON 파일로 교체)
-const TEST_MUSICS: Music[] = [
-  {
-    id: "test1",
-    title: "이마트",
-    artist: "테스트 아티스트",
-    audioPath: getAudioPath("emart.mp3"),
-    notes: [
-      { time: 1000, lane: 0 },
-      { time: 1500, lane: 1 },
-      { time: 2000, lane: 2 },
-      { time: 2500, lane: 3 },
-      { time: 3000, lane: 0 },
-      { time: 3500, lane: 1 },
-      { time: 4000, lane: 2 },
-      { time: 4500, lane: 3 },
-      { time: 5000, lane: 0 },
-      { time: 5500, lane: 1 },
-      { time: 6000, lane: 2 },
-      { time: 6500, lane: 3 },
-      { time: 7000, lane: 0 },
-      { time: 7500, lane: 1 },
-      { time: 8000, lane: 2 },
-    ],
-    bpm: 120,
-  },
-  {
-    id: "test2",
-    title: "테스트 곡 2",
-    artist: "테스트 아티스트",
-    audioPath: getAudioPath("test2.mp3"),
-    notes: [
-      { time: 1000, lane: 0 },
-      { time: 1200, lane: 1 },
-      { time: 1400, lane: 2 },
-      { time: 1600, lane: 3 },
-      { time: 2000, lane: 0 },
-      { time: 2200, lane: 1 },
-      { time: 2400, lane: 2 },
-      { time: 2600, lane: 3 },
-    ],
-    bpm: 150,
-  },
-];
 
 // 노트가 화면 위에서 히트라인까지 내려오는 데 걸리는 시간(연출 속도)
 const TRAVEL_MS = 1800;
@@ -91,6 +47,9 @@ export default function Game() {
   const [selectedMusic, setSelectedMusic] = useState<Music | null>(null);
   const notes = useMemo(() => selectedMusic?.notes ?? [], [selectedMusic]);
 
+  // 배속 설정 (1.0, 1.5, 2.0, 3.0)
+  const [speed, setSpeed] = useState<number>(1.0);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -111,6 +70,60 @@ export default function Game() {
 
   const [lastJudge, setLastJudge] = useState<Judge | null>(null);
   const [lastDelta, setLastDelta] = useState<number | null>(null);
+
+  // 게임 종료 결과 모달 표시 여부
+  const [showResultModal, setShowResultModal] = useState(false);
+
+  const [musics, setMusics] = useState<Music[]>([]);
+
+  // JSON 파일에서 음악 데이터 로드
+  useEffect(() => {
+    const loadMusicsFromJSON = async () => {
+      try {
+        // assets 폴더에서 모든 JSON 파일 찾기 (동적 import는 제한적이므로 fetch 사용)
+        // 대신 특정 JSON 파일들을 직접 로드하거나, 하나의 JSON 파일에 모든 데이터를 넣는 방식 사용
+        // 예: musics.json 파일 하나에 모든 음악 데이터를 배열로 저장
+        const response = await fetch(
+          new URL("./assets/musics.json", import.meta.url).href
+        );
+        if (response.ok) {
+          const data = await response.json();
+          // JSON이 배열이면 그대로, 객체면 배열로 변환
+          const loadedMusics: Music[] = Array.isArray(data) ? data : [data];
+
+          // audioPath를 올바른 경로로 변환
+          const processedMusics = loadedMusics.map((music) => ({
+            ...music,
+            audioPath: music.audioPath.startsWith("./")
+              ? getAudioPath(music.audioPath.replace("./assets/audio/", ""))
+              : music.audioPath.startsWith("http") ||
+                  music.audioPath.includes("/")
+                ? music.audioPath
+                : getAudioPath(music.audioPath), // 파일명만 있는 경우 getAudioPath 사용
+          }));
+
+          setMusics((prev) => {
+            // 기존 음악과 병합 (id 기준으로 중복 제거)
+            const merged = [...prev];
+            processedMusics.forEach((newMusic) => {
+              const index = merged.findIndex((m) => m.id === newMusic.id);
+              if (index >= 0) {
+                merged[index] = newMusic;
+              } else {
+                merged.push(newMusic);
+              }
+            });
+            return merged;
+          });
+        }
+      } catch (error) {
+        // JSON 파일이 없어도 에러 무시
+        console.log("JSON 파일을 로드할 수 없습니다.");
+      }
+    };
+
+    loadMusicsFromJSON();
+  }, []);
 
   // 각 레인별로 다음 노트 찾기
   const getNextNote = (lane: LaneIndex): Note | null => {
@@ -199,6 +212,8 @@ export default function Game() {
     setLastJudge(null);
     setLastDelta(null);
     setCountdown(null);
+    setAudioEnded(false); // 오디오 종료 플래그 초기화
+    setShowResultModal(false); // 결과 모달 닫기
     if (rafId.current) cancelAnimationFrame(rafId.current);
     if (countdownIntervalRef.current)
       clearInterval(countdownIntervalRef.current);
@@ -388,7 +403,8 @@ export default function Game() {
       !isPlaying &&
       !countdown &&
       !hasStartedRef.current &&
-      !isPaused
+      !isPaused &&
+      !showResultModal // 결과 모달이 표시되지 않았을 때만
     ) {
       // 음악이 선택되고 게임이 시작되지 않았고, 아직 시작한 적이 없고, 일시정지 상태가 아닐 때만 카운트다운 시작
       hasStartedRef.current = true;
@@ -397,7 +413,14 @@ export default function Game() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [selectedMusic, isPlaying, countdown, isPaused, startCountdown]);
+  }, [
+    selectedMusic,
+    isPlaying,
+    countdown,
+    isPaused,
+    showResultModal,
+    startCountdown,
+  ]);
 
   const backToSelect = () => {
     setSelectedMusic(null);
@@ -420,6 +443,8 @@ export default function Game() {
 
       // SourceNode 정지
       if (sourceNodeRef.current) {
+        // onended 이벤트 핸들러 제거 (일시정지 시 게임 종료로 인식되지 않도록)
+        sourceNodeRef.current.onended = null;
         try {
           sourceNodeRef.current.stop();
         } catch (e) {
@@ -665,6 +690,14 @@ export default function Game() {
       const nextNote = getNextNote(lane);
       if (nextNote === null) return;
 
+      // 노트가 화면에 나타났는지 확인 (화면에 보일 때만 처리)
+      const travelMs = TRAVEL_MS / speed;
+      const appearAt = nextNote.time - travelMs;
+      if (nowMs < appearAt) {
+        // 노트가 아직 화면에 나타나지 않았으면 무시
+        return;
+      }
+
       const { judge, deltaMs } = judgeHit(nowMs, nextNote.time);
       applyJudge(judge, deltaMs);
 
@@ -677,12 +710,13 @@ export default function Game() {
 
     window.addEventListener("keydown", onKeyDown, { passive: false });
     return () => window.removeEventListener("keydown", onKeyDown as any);
-  }, [isPlaying, isPaused, startTime, nowMs, ended, laneIndices]);
+  }, [isPlaying, isPaused, startTime, nowMs, ended, laneIndices, speed]);
 
-  // ✅ 끝나면 정지
+  // ✅ 끝나면 정지 및 결과 모달 표시
   useEffect(() => {
     if (!isPlaying) return;
     if (!ended) return;
+    if (isPaused) return; // 일시정지 상태에서는 게임 종료로 인식하지 않음
 
     const id = window.setTimeout(() => {
       setIsPlaying(false);
@@ -698,15 +732,18 @@ export default function Game() {
         sourceNodeRef.current.disconnect();
         sourceNodeRef.current = null;
       }
+      // 결과 모달 표시
+      setShowResultModal(true);
     }, 800);
 
     return () => window.clearTimeout(id);
-  }, [isPlaying, ended]);
+  }, [isPlaying, ended, isPaused]);
 
-  // 노트 Y좌표 계산
+  // 노트 Y좌표 계산 (배속 적용)
   const getNoteY = (noteTime: number) => {
-    const appearAt = noteTime - TRAVEL_MS;
-    const t = (nowMs - appearAt) / TRAVEL_MS; // 0~1
+    const travelMs = TRAVEL_MS / speed; // 배속에 따라 속도 조절
+    const appearAt = noteTime - travelMs;
+    const t = (nowMs - appearAt) / travelMs; // 0~1
     return START_Y + t * (HIT_Y - START_Y);
   };
 
@@ -714,9 +751,11 @@ export default function Game() {
   if (!selectedMusic) {
     return (
       <MusicSelect
-        musics={TEST_MUSICS}
+        musics={musics}
         onSelect={handleMusicSelect}
         onGoHome={goHome}
+        speed={speed}
+        onSpeedChange={setSpeed}
       />
     );
   }
@@ -737,6 +776,17 @@ export default function Game() {
       {isPaused && (
         <PauseModal
           onResume={resume}
+          onRestart={restart}
+          onSelectMusic={backToSelect}
+          onGoHome={goHome}
+        />
+      )}
+
+      {showResultModal && (
+        <GameResultModal
+          score={score}
+          combo={combo}
+          bestCombo={bestCombo}
           onRestart={restart}
           onSelectMusic={backToSelect}
           onGoHome={goHome}
@@ -838,15 +888,6 @@ export default function Game() {
     </div>
   );
 }
-
-const btnStyle: React.CSSProperties = {
-  padding: "10px 14px",
-  borderRadius: 14,
-  border: "1px solid rgba(0,0,0,0.15)",
-  background: "rgba(0,0,0,0.05)",
-  fontWeight: 800,
-  cursor: "pointer",
-};
 
 const fieldStyle: React.CSSProperties = {
   position: "relative",
