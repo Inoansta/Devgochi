@@ -794,13 +794,16 @@ export default function Game() {
     <div
       style={{
         textAlign: "center",
-        position: "relative",
-        minHeight: "100vh",
-        backgroundImage: `url(${getImagePath("playbackground.png")})`,
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        backgroundImage: `url(${getImagePath("playBackground.png")})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
+        overflow: "auto",
       }}
     >
       <Countdown count={countdown} />
