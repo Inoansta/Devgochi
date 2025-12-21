@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react"; // useCallback 삭제 (즉시 실행하므로 필요성 낮아짐)
+import React, { useState, useEffect, useCallback } from "react";
+
+// 컴포넌트
 import SortItem from "./components/SortItem.jsx";
 import ScoreBoard from "./components/ScoreBoard.jsx";
 import GameOver from "./components/GameOver.jsx";
 import GameStart from "./components/GameStart.jsx";
-// import GameLoading from "./components/GameLoading.jsx"; // 로딩 컴포넌트 제거
+import GameLoading from "./components/GameLoading.jsx";
 import Decoration from "./components/Decoration.jsx";
+
 import { GAME_CONFIG, getStaticY } from "./constants.js";
 import "./CSS/BugHunter.css";
 import BackgroundImage from "./images/rail_background.png";
@@ -13,18 +16,21 @@ let nextId = 0;
 
 const BugHunter = () => {
   const [score, setScore] = useState(0);
-  const [status, setStatus] = useState("READY"); // READY, PLAYING, GameOver
+  const [status, setStatus] = useState("READY");
   const [characters, setCharacters] = useState([]);
   const [feedback, setFeedback] = useState(null);
-  const [isPausedForGameOver, setIsPausedForGameOver] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
 
-  // 게임 시작 함수 (로딩 단계를 거치지 않고 바로 호출)
-  const startGame = () => {
+  // 점수 팝업 관리를 위한 상태
+  const [popups, setPopups] = useState([]);
+
+  const startGameData = useCallback(() => {
     setScore(0);
-    setIsPausedForGameOver(false);
+    setIsPaused(false);
     setFeedback(null);
     setTimeLeft(60);
+    setPopups([]);
 
     const initialCharacters = Array.from({ length: 15 }, (_, index) => ({
       id: nextId++,
@@ -35,8 +41,9 @@ const BugHunter = () => {
 
     setCharacters(initialCharacters);
     setStatus("PLAYING");
-  };
+  }, []);
 
+  const handleStartButton = () => setStatus("LOADING");
   const endGame = () => setStatus("GameOver");
 
   // 타이머 로직
@@ -55,19 +62,30 @@ const BugHunter = () => {
     return () => clearInterval(timer);
   }, [status]);
 
-  // 입력 판정 로직
+  // 키보드 입력 및 판정 로직
   useEffect(() => {
-    if (status !== "PLAYING" || isPausedForGameOver) return;
+    if (status !== "PLAYING" || isPaused) return;
+
     const handleKeyDown = (e) => {
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         const target = characters[0];
         if (!target) return;
+
         const isCorrect =
           (e.key === "ArrowLeft" && target.type === "정상코드") ||
           (e.key === "ArrowRight" && target.type === "버그");
+
         if (isCorrect) {
           setScore((s) => s + 10);
           setFeedback("correct");
+
+          // 점수 팝업 생성
+          const newPopup = { id: Date.now(), text: "+10" };
+          setPopups((prev) => [...prev, newPopup]);
+          setTimeout(() => {
+            setPopups((prev) => prev.filter((p) => p.id !== newPopup.id));
+          }, 600);
+
           setCharacters((prev) => {
             const remaining = prev
               .slice(1)
@@ -82,49 +100,58 @@ const BugHunter = () => {
           });
         } else {
           setFeedback("incorrect");
-          setIsPausedForGameOver(true);
+          setIsPaused(true);
         }
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [status, characters, isPausedForGameOver]);
+  }, [status, characters, isPaused]);
 
-  // 피드백 효과 제거 로직 추가 (기존 코드 누락분 보충)
+  // 피드백/경직 해제 타이머
   useEffect(() => {
-    if (feedback) {
+    if (feedback === "correct") {
       const timer = setTimeout(() => setFeedback(null), 500);
       return () => clearTimeout(timer);
     }
-  }, [feedback]);
-
-  // 오답 시 대기 후 종료 로직 추가 (기존 코드 누락분 보충)
-  useEffect(() => {
-    if (isPausedForGameOver) {
+    if (feedback === "incorrect" && isPaused) {
       const timer = setTimeout(() => {
-        endGame();
-        setIsPausedForGameOver(false);
-      }, 2000);
+        setFeedback(null);
+        setIsPaused(false);
+      }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [isPausedForGameOver]);
+  }, [feedback, isPaused]);
+
+  const isTimeCritical = timeLeft > 0 && timeLeft < 10;
 
   return (
     <div className="BugHunterContainer">
       <Decoration status={status} />
 
-      {/* 시작 버튼 누르면 바로 startGame 실행 */}
-      {status === "READY" && <GameStart onStart={startGame} />}
-
-      {/* 로딩 화면 섹션 삭제됨 */}
+      {status === "READY" && <GameStart onStart={handleStartButton} />}
+      {status === "LOADING" && <GameLoading onLoadComplete={startGameData} />}
 
       {status === "PLAYING" && (
         <>
-          <ScoreBoard score={score} timeLeft={timeLeft} status={status} />
+          <ScoreBoard
+            score={score}
+            timeLeft={timeLeft}
+            status={status}
+            isCritical={isTimeCritical}
+          />
+
           <div
-            className={`PlayArea ${feedback || ""}`}
+            className={`PlayArea ${feedback || ""} ${isTimeCritical ? "danger-mode" : ""}`}
             style={{ "--bg-image": `url(${BackgroundImage})` }}
           >
+            {popups.map((popup) => (
+              <div key={popup.id} className="score-popup">
+                {popup.text}
+              </div>
+            ))}
+
             {characters.map((char) => (
               <SortItem key={char.id} data={char} />
             ))}
@@ -132,7 +159,9 @@ const BugHunter = () => {
         </>
       )}
 
-      {status === "GameOver" && <GameOver score={score} onStart={startGame} />}
+      {status === "GameOver" && (
+        <GameOver score={score} onStart={handleStartButton} />
+      )}
     </div>
   );
 };
