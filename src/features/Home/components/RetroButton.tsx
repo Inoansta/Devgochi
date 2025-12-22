@@ -8,12 +8,15 @@ interface RetroButtonProps {
 }
 
 const ButtonContainer = styled.button`
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 60%;
-  margin: 10px;
-  padding: 10px 5px;
+  margin: 5px;
+  padding: 10px 10px;
   background-color: #c0c0c0;
 
   font-family: "Courier New", Courier, monospace;
@@ -53,8 +56,7 @@ const ImageWrapper = styled.div`
   align-items: center;
 
   img {
-    width: 40px;
-    height: 40px;
+    width: 20px;
     image-rendering: pixelated; /* 도트 깨짐 방지 */
   }
 `;

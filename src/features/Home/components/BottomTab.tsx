@@ -11,11 +11,10 @@ const Tab = styled.div`
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 80px;
+  height: 60px;
   background-color: #bfbfbf;
   border-top: 4px solid #ffffff;
   z-index: 1;
-  justify-content: space-around;
   align-items: center;
   color: white;
   font-weight: bold;
