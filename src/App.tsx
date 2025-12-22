@@ -1,10 +1,10 @@
 import "./App.css";
 import { Routes, Route } from "react-router";
 
-import Home from "@/pages/Home";
 import BugHunter from "@/features/BugHunterGame/BugHunter.jsx";
 import RunningGame from "./features/RunningGame";
 import RhythmGame from "@/features/RhythmGame";
+import Home from "@/features/Home/Home";
 
 function App() {
   return (

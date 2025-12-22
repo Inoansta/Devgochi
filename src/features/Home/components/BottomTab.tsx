@@ -25,8 +25,13 @@ function BottomTab() {
   return (
     <Tab>
       <RetroButton moveTo={"/run"} label={"RUNNING MAN"} image={Running} />
+<<<<<<< HEAD
+      <RetroButton moveTo={"/RhythmGame"} label={"RHYTHM GAME"} image={Rhythm} />
+      <RetroButton moveTo={"/BugHunter"} label={"BUG HUNTER"} image={Bug} />
+=======
       <RetroButton moveTo={"/run"} label={"RHYTHM GAME"} image={Rhythm} />
       <RetroButton moveTo={"/run"} label={"BUG HUNTER"} image={Bug} />
+>>>>>>> 2514374e271cb4d5c5b52d54a3bce2817f15f295
     </Tab>
   );
 }

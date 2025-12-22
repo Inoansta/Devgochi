@@ -56,3 +56,4 @@ const Obstacle = forwardRef<HTMLDivElement>((_, ref) => {
 
 // 부모(GamePlay)가 리렌더링되어도 Obstacle은 다시 그려지지 않도록
 export default React.memo(Obstacle);
+

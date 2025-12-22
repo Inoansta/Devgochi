@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 // 컴포넌트
 import SortItem from "./components/SortItem.jsx";
 import ScoreBoard from "./components/ScoreBoard.jsx";
-import GameOver from "./components/GameOver.jsx";
+import GameOver from "./components/Gameover.jsx";
 import GameStart from "./components/GameStart.jsx";
 import GameLoading from "./components/GameLoading.jsx";
 import Decoration from "./components/Decoration.jsx";
