@@ -1,5 +1,5 @@
 import React from "react";
-import "../css/ScoreBoard.css";
+import "../CSS/ScoreBoard.css";
 
 const ScoreBoard = ({ score, timeLeft, status }) => {
   // 10초 미만 긴박감 상태 확인
