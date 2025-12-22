@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled, { keyframes, css } from "styled-components";
 import BackGround from "./assets/serverBack.png";
+import { useCharacter } from "@/hooks/useCharacter";
+import { useNavigate } from "react-router";
 
 // Props 타입 정의
 interface GameOverProps {
@@ -181,34 +183,45 @@ const NewRecordBadge = styled.span`
   }
 `;
 
-const RestartButton = styled.button`
-  margin-top: 1rem;
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+  justify-content: center;
+`;
+
+const PixelButton = styled.button<{ $primary?: boolean }>`
   font-family: "Galmuri11", sans-serif;
   font-size: 1.2rem;
-  background: rgba(77, 238, 234, 0.1); /* Intro 버튼 배경색 통일 */
-  color: #4deeea;
-
-  border: 2px solid #4deeea;
-  padding: 15px 40px;
+  background: ${(props) =>
+    props.$primary ? "rgba(255, 107, 107, 0.1)" : "rgba(77, 238, 234, 0.1)"};
+  color: ${(props) => (props.$primary ? "#FF6B6B" : "#4DEEEA")};
+  border: 2px solid ${(props) => (props.$primary ? "#FF6B6B" : "#4DEEEA")};
+  padding: 15px 30px;
   cursor: pointer;
   position: relative;
-  font-weight: bold;
 
   box-shadow:
-    inset 0 0 10px rgba(77, 238, 234, 0.3),
+    inset 0 0 10px
+      ${(props) =>
+        props.$primary
+          ? "rgba(255, 107, 107, 0.3)"
+          : "rgba(77, 238, 234, 0.3)"},
     0 0 10px rgba(0, 0, 0, 0.5);
-  text-shadow: 0 0 5px rgba(77, 238, 234, 0.5);
+  text-shadow: 0 0 5px
+    ${(props) =>
+      props.$primary ? "rgba(255, 107, 107, 0.5)" : "rgba(77, 238, 234, 0.5)"};
 
   transition: all 0.1s;
 
   &:hover {
     transform: translate(-2px, -2px);
-    background: #4deeea;
+    background: ${(props) => (props.$primary ? "#FF6B6B" : "#4DEEEA")};
     color: #000;
-    box-shadow:
-      0 0 20px #4deeea,
-      4px 4px 0px 0px #000;
     text-shadow: none;
+    box-shadow:
+      0 0 20px ${(props) => (props.$primary ? "#FF6B6B" : "#4DEEEA")},
+      4px 4px 0px 0px #000;
   }
 
   &:active {
@@ -228,7 +241,10 @@ const GameOver = ({ score, onRestart }: GameOverProps) => {
   const [gainedXp, setGainedXp] = useState<number>(0);
   // 총 경험치
   const [totalXp, setTotalXp] = useState<number>(0);
-  const isNewRef = React.useRef<boolean | null>(null);
+  const isNewRef = useRef<boolean | null>(null);
+  const { gainExp } = useCharacter();
+  const isExpProcessedRef = useRef<boolean>(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // 경험치 가중치 계산
@@ -256,12 +272,15 @@ const GameOver = ({ score, onRestart }: GameOverProps) => {
       setIsNewRecord(false);
     }
 
-    const savedTotalXP = localStorage.getItem("runningGameTotalXP");
-    const currentTotalXP = savedTotalXP ? parseInt(savedTotalXP, 10) : 0;
-    const newTotalXP = currentTotalXP + xp;
-
-    setTotalXp(newTotalXP);
-    localStorage.setItem("runningGameTotalXP", newTotalXP.toString());
+    if (!isExpProcessedRef.current) {
+      // gainedXp state is updated asynchronously, so use local `xp` value
+      gainExp(xp);
+      const savedTotalXP = localStorage.getItem("exp");
+      const currentTotalXP = savedTotalXP ? parseInt(savedTotalXP, 10) : 0;
+      const newDisplayTotalXP = currentTotalXP + xp;
+      setTotalXp(newDisplayTotalXP);
+      isExpProcessedRef.current = true; // 처리 완료 플래그 세우기
+    }
   }, [score]);
 
   return (
@@ -296,7 +315,15 @@ const GameOver = ({ score, onRestart }: GameOverProps) => {
           </ResultRow>
         </ResultBox>
 
-        <RestartButton onClick={onRestart}>SYSTEM REBOOT</RestartButton>
+{/* 버튼 영역 */}
+        <ButtonGroup>
+          <PixelButton onClick={onRestart}>
+            SYSTEM REBOOT
+          </PixelButton>
+          <PixelButton $primary onClick={() => navigate("/")}>
+            MISSION START
+          </PixelButton>
+        </ButtonGroup>
       </ContentWrapper>
     </Overlay>
   );
