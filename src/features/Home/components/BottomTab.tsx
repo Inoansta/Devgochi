@@ -14,7 +14,7 @@ const Tab = styled.div`
   height: 80px;
   background-color: #bfbfbf;
   border-top: 4px solid #ffffff; 
-  z-index: 1
+  z-index: 1;
   justify-content: space-around; 
   align-items: center;
   color: white;

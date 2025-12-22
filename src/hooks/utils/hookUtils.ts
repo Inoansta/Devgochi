@@ -1,10 +1,10 @@
 // utils/levelLogic.ts
 
 export const EXP_LIMITS: Record<number, number> = {
-  1: 1000,
-  2: 2000,
-  3: 3000,
-  4: 4000,
+  1: 2000,
+  2: 4000,
+  3: 6000,
+  4: 8000,
   5: 999999, // 만렙 기준
 };
 
